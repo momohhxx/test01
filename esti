@@ -1,0 +1,37 @@
+def get2rEstimationData_Fixed(T, X, rId, allP, numP):
+    N, _ = X.shape
+    kMat = np.zeros([T, numP])
+    nMat = np.zeros([T, numP])
+    pMat = np.zeros([T, numP])
+    
+    DEFAULT_STATE = 6 # Your default state
+    
+    for m in range(numP):
+        # 1. Identify everyone in this region
+        region_mask = (rId == m)
+        
+        for t in range(T):
+            if t == 0:
+                # Year 0: New defaults are those currently in State 6
+                in_default = (X[:, t] == DEFAULT_STATE)
+                at_risk = np.ones(N, dtype=bool) # Everyone was at risk at the very start
+            else:
+                # Year t: New defaults are those in 6 now who were NOT in 6 last year
+                in_default = (X[:, t] == DEFAULT_STATE) & (X[:, t-1] != DEFAULT_STATE)
+                # At risk: Those who were healthy at the end of last year
+                at_risk = (X[:, t-1] != DEFAULT_STATE)
+            
+            # Combine with region
+            current_defaults = region_mask & in_default
+            current_at_risk = region_mask & at_risk
+            
+            kMat[t, m] = np.sum(current_defaults)
+            nMat[t, m] = np.sum(current_at_risk)
+            
+            # Calculate mean PD for those at risk
+            if nMat[t, m] > 0:
+                pMat[t, m] = np.mean(allP[current_at_risk, t])
+            else:
+                pMat[t, m] = 0.0
+                
+    return pMat, nMat, kMat
