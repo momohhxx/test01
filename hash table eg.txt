@@ -1,0 +1,163 @@
+* hash table eg, find employee city of origin and dob;
+
+data test01;
+
+length name $20. cid 6.;
+
+input name $ cid ;
+
+cards;
+
+lucyhe 101
+
+jimgreen 103
+
+tomzhou 106
+
+fangliu 110
+
+unclewang 112
+
+;
+
+run;
+
+ 
+
+ 
+
+data test02;
+
+input cid2  dob $ city $;
+
+cards;
+
+104 92 hongkong
+
+101 93 shanghai
+
+105 02 toronto
+
+106 87 bj
+
+107 84 dc
+
+103 90 london
+
+;
+
+run;
+
+ 
+
+data test03;
+
+input cid3  salary $;
+
+cards;
+
+103 200k
+
+105 50k
+
+106 7k
+
+108 100k
+
+112 600k
+
+109 300k
+
+;
+
+run;
+
+ 
+
+ 
+
+ 
+
+ 
+
+data work.test_all;
+
+ 
+
+* 1.declare hash table;
+
+if _n_=1 then do;
+
+   if 0 then do;
+
+   set work.test02;
+
+   set work.test03;
+
+   end;
+
+ 
+
+   declare hash lookup101(dataset:'work.test02');
+
+   lookup101.definekey('cid2');
+
+   lookup101.definedata('city','dob');
+
+   lookup101.definedone();
+
+ 
+
+ 
+
+   declare hash lookup102(dataset:'work.test03');
+
+   lookup102.definekey('cid3');
+
+   lookup102.definedata('salary');
+
+   lookup102.definedone();
+
+ 
+
+   end;
+
+ 
+
+* 2.use the hash table to match;
+
+ 
+
+set test01;
+
+* if looup101.find() can find a match, it returns 0;
+
+ckey1=lookup101.find(key:cid);
+
+ 
+
+ckey2=lookup102.find(key:cid);
+
+ 
+
+ 
+
+if ckey1=0 then do;
+
+emp_city=city;
+
+emp_dob=dob;
+
+end;
+
+ 
+
+ 
+
+if ckey2=0 then do;
+
+emp_salary=salary;
+
+end;
+
+run;
